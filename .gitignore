@@ -2,3 +2,5 @@
 *.pdf
 *.o
 main
+*.json
+*.out
