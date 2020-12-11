@@ -20,6 +20,9 @@ double *getMinZ(int n);
 double *getMaxX(int n);
 double *getMaxY(int n);
 double *getMaxZ(int n);
+double getAvgX(int n);
+double getAvgY(int n);
+double getAvgZ(int n);
 
 int main(int argc, char const *argv[])
 {
@@ -77,13 +80,13 @@ int main(int argc, char const *argv[])
     loadFile(file_name3, 2);
     getchar();
 
-    double *maxX = getMaxX(0);
-    double *maxY = getMaxX(0);
-    double *maxZ = getMaxZ(0);
+    double avgX = getAvgX(1);
+    double avgY = getAvgY(1);
+    double avgZ = getAvgZ(1);
 
-    printf("Max X: %lf\n",*(maxX));
-    printf("Max X: %lf\n",*(maxY));
-    printf("Max Z: %lf\n",*(maxZ));
+    printf("Avg X: %lf\n",avgX);
+    printf("Avg Y: %lf\n",avgY);
+    printf("Avg Z: %lf\n",avgZ);
 
     return 0;
 }
@@ -341,4 +344,73 @@ double *getMaxZ(int n)
     }
 
     return max_value_ptr;
+}
+
+/*
+ * Function:  getAvgX 
+ * --------------------
+ *  get the average of X
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: the average value of the points
+ */
+double getAvgX(int n)
+{
+    double *cur = points[n].x; /* Double pointer to search the x points */
+    double sum = 0;
+    
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        sum = sum + *(cur);
+        cur = cur + 1;
+    }
+    
+    return sum/points[n].npoints;
+}
+
+/*
+ * Function:  getAvgY 
+ * --------------------
+ *  get the average of Y
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: the average value of the points
+ */
+double getAvgY(int n)
+{
+    double *cur = points[n].y; /* Double pointer to search the y points */
+    double sum = 0;
+    
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        sum = sum + *(cur);
+        cur = cur + 1;
+    }
+
+    return sum/points[n].npoints;
+}
+
+/*
+ * Function:  getAvgZ 
+ * --------------------
+ *  get the average of Z
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: the average value of the points
+ */
+double getAvgZ(int n)
+{
+    double *cur = points[n].z; /* Double pointer to search the z points */
+    double sum = 0;
+    
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        sum = sum + *(cur);
+        cur = cur + 1;
+    }
+
+    return sum/points[n].npoints;
 }
