@@ -1,4 +1,8 @@
+/* 
+ *To run the code use: gcc * main.c -g -Wall -lm
+ */
 #include <stdio.h>
+#include <math.h>
 #include <float.h>
 #include <stdlib.h>
 
@@ -23,6 +27,9 @@ double *getMaxZ(int n);
 double getAvgX(int n);
 double getAvgY(int n);
 double getAvgZ(int n);
+double getDevX(double avg, int n);
+double getDevY(double avg, int n);
+double getDevZ(double avg, int n);
 
 int main(int argc, char const *argv[])
 {
@@ -79,14 +86,6 @@ int main(int argc, char const *argv[])
     loadFile(file_name2, 1);
     loadFile(file_name3, 2);
     getchar();
-
-    double avgX = getAvgX(1);
-    double avgY = getAvgY(1);
-    double avgZ = getAvgZ(1);
-
-    printf("Avg X: %lf\n",avgX);
-    printf("Avg Y: %lf\n",avgY);
-    printf("Avg Z: %lf\n",avgZ);
 
     return 0;
 }
@@ -359,14 +358,14 @@ double getAvgX(int n)
 {
     double *cur = points[n].x; /* Double pointer to search the x points */
     double sum = 0;
-    
+
     for (int i = 0; i < points[n].npoints; i++)
     {
         sum = sum + *(cur);
         cur = cur + 1;
     }
-    
-    return sum/points[n].npoints;
+
+    return sum / points[n].npoints;
 }
 
 /*
@@ -382,14 +381,14 @@ double getAvgY(int n)
 {
     double *cur = points[n].y; /* Double pointer to search the y points */
     double sum = 0;
-    
+
     for (int i = 0; i < points[n].npoints; i++)
     {
         sum = sum + *(cur);
         cur = cur + 1;
     }
 
-    return sum/points[n].npoints;
+    return sum / points[n].npoints;
 }
 
 /*
@@ -405,12 +404,93 @@ double getAvgZ(int n)
 {
     double *cur = points[n].z; /* Double pointer to search the z points */
     double sum = 0;
-    
+
     for (int i = 0; i < points[n].npoints; i++)
     {
         sum = sum + *(cur);
         cur = cur + 1;
     }
 
-    return sum/points[n].npoints;
+    return sum / points[n].npoints;
+}
+
+/*
+ * Function:  getDevX 
+ * --------------------
+ *  gets the deviation of a set of points, using the formula presented in:
+ *  https://en.wikipedia.org/wiki/Standard_deviation
+ * 
+ *  avg: average of the set of points
+ *  n: index of points struct
+ * 
+ *  returns: returns the standart deviation of the points 
+ */
+double getDevX(double avg, int n)
+{
+    double *cur = points[n].x; /* Double pointer to search the x points */
+    double sum = 0;
+    double variance = 0;
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        sum = sum + pow(*(cur)-avg, 2);
+        cur = cur + 1;
+    }
+
+    variance = sum / points[n].npoints;
+    return sqrt(variance);
+}
+
+/*
+ * Function:  getDevY 
+ * --------------------
+ *  gets the deviation of a set of points, using the formula presented in:
+ *  https://en.wikipedia.org/wiki/Standard_deviation
+ * 
+ *  avg: average of the set of points
+ *  n: index of points struct
+ * 
+ *  returns: returns the standart deviation of the points 
+ */
+double getDevY(double avg, int n)
+{
+    double *cur = points[n].y; /* Double pointer to search the y points */
+    double sum = 0;
+    double variance = 0;
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        sum = sum + pow(*(cur)-avg, 2);
+        cur = cur + 1;
+    }
+
+    variance = sum / points[n].npoints;
+    return sqrt(variance);
+}
+
+/*
+ * Function:  getDevZ 
+ * --------------------
+ *  gets the deviation of a set of points, using the formula presented in:
+ *  https://en.wikipedia.org/wiki/Standard_deviation
+ * 
+ *  avg: average of the set of points
+ *  n: index of points struct
+ * 
+ *  returns: returns the standart deviation of the points 
+ */
+double getDevZ(double avg, int n)
+{
+    double *cur = points[n].z; /* Double pointer to search the z points */
+    double sum = 0;
+    double variance = 0;
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        sum = sum + pow(*(cur)-avg, 2);
+        cur = cur + 1;
+    }
+
+    variance = sum / points[n].npoints;
+    return sqrt(variance);
 }
