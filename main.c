@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <float.h>
 #include <stdlib.h>
 
 struct t_point_cloud
@@ -13,6 +14,12 @@ int getNPoints(char *filename);
 void resetPointers(int j);
 void loadFile(char *filename, int i);
 void readStruct(int n);
+double *getMinX(int n);
+double *getMinY(int n);
+double *getMinZ(int n);
+double *getMaxX(int n);
+double *getMaxY(int n);
+double *getMaxZ(int n);
 
 int main(int argc, char const *argv[])
 {
@@ -68,12 +75,28 @@ int main(int argc, char const *argv[])
     loadFile(file_name1, 0);
     loadFile(file_name2, 1);
     loadFile(file_name3, 2);
+    getchar();
+
+    double *maxX = getMaxX(0);
+    double *maxY = getMaxX(0);
+    double *maxZ = getMaxZ(0);
+
+    printf("Max X: %lf\n",*(maxX));
+    printf("Max X: %lf\n",*(maxY));
+    printf("Max Z: %lf\n",*(maxZ));
 
     return 0;
 }
 
-/* Gets the number of points on the file
-   char *filename -> name of the file */
+/*
+ * Function:  getNPoints 
+ * --------------------
+ *  get the number of points in the file, used to load points.npoints
+ * 
+ *  filename: name of the file containing the points
+ * 
+ *  returns: the number of points.
+ */
 int getNPoints(char *filename)
 {
     FILE *file = fopen(filename, "r");
@@ -95,12 +118,16 @@ int getNPoints(char *filename)
     return n;
 }
 
-/**
- * Loads the data struct with file content
+/*
+ * Function:  loadFile 
+ * --------------------
+ *  load the global point struct with the points in the corresponding file 
  * 
- * char *filename -> file name
- * int i -> index of the data struct */
-
+ *  i: the index of the points struct
+ *  filename: name of the file containing the points
+ * 
+ *  returns: void
+ */
 void loadFile(char *filename, int i)
 {
     FILE *file = fopen(filename, "r");
@@ -147,4 +174,171 @@ void readStruct(int n)
     points[n].x = points[n].x - points[n].npoints;
     points[n].y = points[n].y - points[n].npoints;
     points[n].z = points[n].z - points[n].npoints;
+}
+
+/*
+ * Function:  getMinX 
+ * --------------------
+ *  gets the lowest value of x
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: a pointer pointing to the lowest value of x
+ */
+double *getMinX(int n)
+{
+    double min_value = DBL_MAX;   /* High value so it gets replaced */
+    double *min_value_ptr = NULL; /* Pointer pointing to the lowerst x pointer */
+    double *cur = points[n].x;    /* Double pointer to search the x  points */
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        if (*(cur) < min_value)
+        {
+            min_value = *(cur);
+            min_value_ptr = cur;
+        }
+        cur = cur + 1;
+    }
+    return min_value_ptr;
+}
+
+/*
+ * Function:  getMinY 
+ * --------------------
+ *  gets the lowest value of y
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: a pointer pointing to the lowest value of y
+ */
+double *getMinY(int n)
+{
+    double min_value = DBL_MAX;
+    double *min_value_ptr = NULL;
+    double *cur = points[n].y; /* Double pointer to search the x  points */
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        if (*(cur) < min_value)
+        {
+            min_value = *(cur);
+            min_value_ptr = cur;
+        }
+        cur = cur + 1;
+    }
+
+    return min_value_ptr;
+}
+
+/*
+ * Function:  getMinZ 
+ * --------------------
+ *  gets the lowest value of Z
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: a pointer pointing to the lowest value of Z
+ */
+double *getMinZ(int n)
+{
+    double min_value = DBL_MAX;
+    double *min_value_ptr = NULL;
+    double *cur = points[n].z; /* Double pointer to search the x  points */
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        if (*(cur) < min_value)
+        {
+            min_value = *(cur);
+            min_value_ptr = cur;
+        }
+        cur = cur + 1;
+    }
+
+    return min_value_ptr;
+}
+
+/*
+ * Function:  getMaxX 
+ * --------------------
+ *  gets the max value of X
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: a pointer pointing to the max value of X
+ */
+double *getMaxX(int n)
+{
+    double max_value = DBL_MIN;
+    double *max_value_ptr = NULL;
+    double *cur = points[n].x; /* Double pointer to search the x  points */
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        if (*(cur) > max_value)
+        {
+            max_value = *(cur);
+            max_value_ptr = cur;
+        }
+        cur = cur + 1;
+    }
+
+    return max_value_ptr;
+}
+
+/*
+ * Function:  getMaxY 
+ * --------------------
+ *  gets the max value of Y
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: a pointer pointing to the max value of Y
+ */
+double *getMaxY(int n)
+{
+    double max_value = DBL_MIN;
+    double *max_value_ptr = NULL;
+    double *cur = points[n].y; /* Double pointer to search the y points */
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        if (*(cur) > max_value)
+        {
+            max_value = *(cur);
+            max_value_ptr = cur;
+        }
+        cur = cur + 1;
+    }
+
+    return max_value_ptr;
+}
+
+/*
+ * Function:  getMaxZ 
+ * --------------------
+ *  gets the max value of Z
+ * 
+ *  n: index of points struct
+ * 
+ *  returns: a pointer pointing to the max value of Z
+ */
+double *getMaxZ(int n)
+{
+    double max_value = DBL_MIN;
+    double *max_value_ptr = NULL;
+    double *cur = points[n].z; /* Double pointer to search the Z points */
+
+    for (int i = 0; i < points[n].npoints; i++)
+    {
+        if (*(cur) > max_value)
+        {
+            max_value = *(cur);
+            max_value_ptr = cur;
+        }
+        cur = cur + 1;
+    }
+
+    return max_value_ptr;
 }
