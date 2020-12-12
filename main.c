@@ -44,17 +44,14 @@ int main(int argc, char const *argv[])
         if (i == 0)
         {
             points[i].npoints = getNPoints(file_name1);
-            printf("%s: %d\n", file_name1, points[i].npoints);
         }
         if (i == 1)
         {
             points[i].npoints = getNPoints(file_name2);
-            printf("%s: %d\n", file_name2, points[i].npoints);
         }
         if (i == 2)
         {
             points[i].npoints = getNPoints(file_name3);
-            printf("%s: %d\n", file_name3, points[i].npoints);
         }
     }
 
@@ -85,7 +82,6 @@ int main(int argc, char const *argv[])
     loadFile(file_name1, 0);
     loadFile(file_name2, 1);
     loadFile(file_name3, 2);
-    getchar();
 
     return 0;
 }
@@ -142,7 +138,6 @@ void loadFile(char *filename, int i)
 
     while (fscanf(file, "%lf%lf%lf", points[i].x, points[i].y, points[i].z) != EOF)
     {
-        printf("%lf %lf %lf\n", *(points[i].x), *(points[i].y), *(points[i].z));
         points[i].x++;
         points[i].y++;
         points[i].z++;
