@@ -72,12 +72,36 @@ void initGrid(struct grid *g, struct square sq)
     g->sub_sq -= NSQUARES;
 }
 
+struct coord getTopRight(struct sub_square *sq)
+{
+    struct coord res;
+    res.x = sq->top_left.x + sq->side_len;
+    res.y = sq->top_left.y;
+    return res;
+}
+
+struct coord getLowRight(struct sub_square *sq)
+{
+    struct coord res;
+    res.x = sq->top_left.x + sq->side_len;
+    res.y = sq->top_left.y - sq->side_len;
+    return res;
+}
+
+struct coord getLowLeft(struct sub_square *sq)
+{
+    struct coord res;
+    res.x = sq->top_left.x;
+    res.y = sq->top_left.y - sq->side_len;
+    return res;
+}
+
 /* Use for DEBUG - prints all the sub squares in the grid */
 void printGrid(struct grid *g)
 {
     for (int i = 0; i < g->nsquares; i++)
     {
-        printf("Sub SQ: %d Top Corner x: %lf y: %lf\n", g->sub_sq->id, g->sub_sq->top_left.x, g->sub_sq->top_left.y);
+        printf("Sub SQ: %d  x: %lf y: %lf trx: %lf try: %lf \n", g->sub_sq->id, g->sub_sq->top_left.x, g->sub_sq->top_left.y, getTopRight(g->sub_sq).x,getTopRight(g->sub_sq).y);
         g->sub_sq++;
     }
     g->sub_sq -= NSQUARES;

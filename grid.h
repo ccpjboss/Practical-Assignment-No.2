@@ -41,3 +41,7 @@ void initCoord(struct coord *c, double x, double y);
 void initGrid(struct grid *Grid, struct square sq);
 void initSquare(struct square *sq, struct coord tl);
 void printGrid(struct grid *g);
+struct coord getTopLeft(struct sub_square *sq){return sq->top_left;}
+struct coord getTopRight(struct sub_square *sq);
+struct coord getLowRight(struct sub_square *sq);
+struct coord getLowLeft(struct sub_square *sq);

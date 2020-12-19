@@ -93,7 +93,6 @@ int main(int argc, char const *argv[])
     initSquare(&sq,tl);
     initGrid(&g,sq);
     printGrid(&g); 
-    printGrid(&g);
 
     return 0;
 }
