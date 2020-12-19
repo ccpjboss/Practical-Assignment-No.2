@@ -5,6 +5,7 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include "grid.h"
 
 struct t_point_cloud
 {
@@ -30,6 +31,7 @@ double getAvgZ(int n);
 double getDevX(double avg, int n);
 double getDevY(double avg, int n);
 double getDevZ(double avg, int n);
+void deleteIdx(int n, int idx);
 
 int main(int argc, char const *argv[])
 {
@@ -82,6 +84,16 @@ int main(int argc, char const *argv[])
     loadFile(file_name1, 0);
     loadFile(file_name2, 1);
     loadFile(file_name3, 2);
+
+    struct coord tl;
+    struct square sq;
+    struct grid g;
+
+    initCoord(&tl,0,15);
+    initSquare(&sq,tl);
+    initGrid(&g,sq);
+    printGrid(&g); 
+    printGrid(&g);
 
     return 0;
 }
@@ -488,4 +500,40 @@ double getDevZ(double avg, int n)
 
     variance = sum / points[n].npoints;
     return sqrt(variance);
+}
+
+void deleteIdx(int n, int idx)
+{
+    /* Gets the address of the number to eliminate */
+    double *curx = points[n].x + idx - 1;
+    double *cury = points[n].y + idx - 1;
+    double *curz = points[n].z + idx - 1;
+
+    /* Saves the start address to come back to the start */
+    double *startx = points[n].x;
+    double *starty = points[n].y;
+    double *startz = points[n].z;
+
+    /* Puts the last value of the struct into the point to eliminate */
+    *curx = *(points[n].x + points[n].npoints - 1);
+    *cury = *(points[n].y + points[n].npoints - 1);
+    *curz = *(points[n].z + points[n].npoints - 1);
+
+    /* Goes to the last element of the struct */
+    points[n].x = points[n].x + points[n].npoints - 1;
+    points[n].y = points[n].y + points[n].npoints - 1;
+    points[n].z = points[n].z + points[n].npoints - 1;
+
+    /* Puts the last value equal to NULL. This is not a problem because the last number is already saved to on the address to eliminate */
+    points[n].x = NULL;
+    points[n].y = NULL;
+    points[n].z = NULL;
+
+    /* Goes back to the start */
+    points[n].x = startx;
+    points[n].y = starty;
+    points[n].z = startz;
+
+    /* Updates the total of points */
+    points[n].npoints--;
 }

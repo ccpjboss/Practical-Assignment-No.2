@@ -4,3 +4,4 @@
 main
 *.json
 *.out
+*.h.gch
