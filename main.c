@@ -5,12 +5,7 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
-
-struct t_point_cloud
-{
-    double *x, *y, *z; /* Points coordinates */
-    int npoints;       /* Number of points */
-};
+#include "grid.h"
 
 struct t_point_cloud points[3]; /* 3 arrays com os as structs das coordenadas */
 
@@ -30,58 +25,16 @@ double getAvgZ(int n);
 double getDevX(double avg, int n);
 double getDevY(double avg, int n);
 double getDevZ(double avg, int n);
+void freePointCloud(struct grid *g);
+void task1();
+void task3();
 
 int main(int argc, char const *argv[])
 {
-    /* Name of the files */
-    char *file_name1 = "point_cloud1.txt";
-    char *file_name2 = "point_cloud2.txt";
-    char *file_name3 = "point_cloud3.txt";
+    task1();
+    task3();
 
-    /* gets the number os coordinates presented on the files */
-    for (int i = 0; i < 3; i++)
-    {
-        if (i == 0)
-        {
-            points[i].npoints = getNPoints(file_name1);
-        }
-        if (i == 1)
-        {
-            points[i].npoints = getNPoints(file_name2);
-        }
-        if (i == 2)
-        {
-            points[i].npoints = getNPoints(file_name3);
-        }
-    }
-
-    /* Allocates the memory for the coordinates */
-    for (int i = 0; i < 3; i++)
-    {
-        if (i == 0)
-        {
-            points[i].x = (double *)malloc(points[i].npoints * sizeof(double));
-            points[i].y = (double *)malloc(points[i].npoints * sizeof(double));
-            points[i].z = (double *)malloc(points[i].npoints * sizeof(double));
-        }
-        if (i == 1)
-        {
-            points[i].x = (double *)malloc(points[i].npoints * sizeof(double));
-            points[i].y = (double *)malloc(points[i].npoints * sizeof(double));
-            points[i].z = (double *)malloc(points[i].npoints * sizeof(double));
-        }
-        if (i == 2)
-        {
-            points[i].x = (double *)malloc(points[i].npoints * sizeof(double));
-            points[i].y = (double *)malloc(points[i].npoints * sizeof(double));
-            points[i].z = (double *)malloc(points[i].npoints * sizeof(double));
-        }
-    }
-
-    /* Loads the data structs with the file content */
-    loadFile(file_name1, 0);
-    loadFile(file_name2, 1);
-    loadFile(file_name3, 2);
+    free(points[0].x);
 
     return 0;
 }
@@ -156,11 +109,6 @@ void readStruct(int n)
 {
     for (int i = 0; i < points[n].npoints; i++)
     {
-        if (*(points[n].x) == 0)
-        {
-            printf("zero\n");
-            return;
-        }
         printf("%lf %lf %lf\n", *(points[n].x), *(points[n].y), *(points[n].z));
         points[n].x++;
         points[n].y++;
@@ -488,4 +436,89 @@ double getDevZ(double avg, int n)
 
     variance = sum / points[n].npoints;
     return sqrt(variance);
+}
+
+void task1()
+{
+    /* Name of the files */
+    char *file_name1 = "point_cloud1.txt";
+    char *file_name2 = "point_cloud2.txt";
+    char *file_name3 = "point_cloud3.txt";
+
+    /* gets the number os coordinates presented on the files */
+    for (int i = 0; i < 3; i++)
+    {
+        if (i == 0)
+        {
+            points[i].npoints = getNPoints(file_name1);
+        }
+        if (i == 1)
+        {
+            points[i].npoints = getNPoints(file_name2);
+        }
+        if (i == 2)
+        {
+            points[i].npoints = getNPoints(file_name3);
+        }
+    }
+
+    /* Allocates the memory for the coordinates */
+    for (int i = 0; i < 3; i++)
+    {
+        if (i == 0)
+        {
+            points[i].x = (double *)malloc(points[i].npoints * sizeof(double));
+            points[i].y = (double *)malloc(points[i].npoints * sizeof(double));
+            points[i].z = (double *)malloc(points[i].npoints * sizeof(double));
+        }
+        if (i == 1)
+        {
+            points[i].x = (double *)malloc(points[i].npoints * sizeof(double));
+            points[i].y = (double *)malloc(points[i].npoints * sizeof(double));
+            points[i].z = (double *)malloc(points[i].npoints * sizeof(double));
+        }
+        if (i == 2)
+        {
+            points[i].x = (double *)malloc(points[i].npoints * sizeof(double));
+            points[i].y = (double *)malloc(points[i].npoints * sizeof(double));
+            points[i].z = (double *)malloc(points[i].npoints * sizeof(double));
+        }
+    }
+
+    /* Loads the data structs with the file content */
+    loadFile(file_name1, 0);
+    loadFile(file_name2, 1);
+    loadFile(file_name3, 2);
+}
+
+void task3()
+{ 
+    struct coord tl;
+    struct square sq;
+    struct grid g;
+
+    double sqrx = 0;
+    double sqry = 15;
+
+    initCoord(&tl, sqrx, sqry);
+    initSquare(&sq, tl);
+    initGrid(&g, sq);
+    printGrid(&g);
+    loadPointsGrid(&g, points[0]);
+
+    for (int i=0;i<g.nsquares;i++)
+    {
+        checkDriveSQ(&g.sub_sq[i]);
+    }
+
+    eliminateNonDrivePoints(&g);
+    
+    printf("After deleting non drivable squares...\n");
+
+    for (int i=0;i<g.nsquares;i++)
+    {
+        checkDriveSQ(&g.sub_sq[i]);
+    }
+     
+    freeGrid(&g);
 }
