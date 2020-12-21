@@ -13,6 +13,7 @@ int getNPoints(char *filename);
 void resetPointers(int j);
 void loadFile(char *filename, int i);
 void readStruct(int n);
+void preProcessing(struct t_point_cloud *ptr);
 
 int main(int argc, char const *argv[])
 {
@@ -21,23 +22,23 @@ int main(int argc, char const *argv[])
     char *file_name2 = "point_cloud2.txt";
     char *file_name3 = "point_cloud3.txt";
 
-    /* gets the number os coordinates presented on the files */
+    /* gets the number of coordinates presented on the files */
     for (int i = 0; i < 3; i++)
     {
         if (i == 0)
         {
             points[i].npoints = getNPoints(file_name1);
-            printf("%s: %d\n", file_name1, points[i].npoints);
+            //printf("%s: %d\n", file_name1, points[i].npoints);
         }
         if (i == 1)
         {
             points[i].npoints = getNPoints(file_name2);
-            printf("%s: %d\n", file_name2, points[i].npoints);
+            //printf("%s: %d\n", file_name2, points[i].npoints);
         }
         if (i == 2)
         {
             points[i].npoints = getNPoints(file_name3);
-            printf("%s: %d\n", file_name3, points[i].npoints);
+            //printf("%s: %d\n", file_name3, points[i].npoints);
         }
     }
 
@@ -68,6 +69,14 @@ int main(int argc, char const *argv[])
     loadFile(file_name1, 0);
     loadFile(file_name2, 1);
     loadFile(file_name3, 2);
+
+    
+    preProcessing(&points[1]);
+
+    readStruct(1);
+
+
+    printf("%d\n",points[1].npoints);
 
     return 0;
 }
@@ -113,7 +122,7 @@ void loadFile(char *filename, int i)
 
     while (fscanf(file, "%lf%lf%lf", points[i].x, points[i].y, points[i].z) != EOF)
     {
-        printf("%lf %lf %lf\n", *(points[i].x), *(points[i].y), *(points[i].z));
+        //printf("%lf %lf %lf\n", *(points[i].x), *(points[i].y), *(points[i].z));
         points[i].x++;
         points[i].y++;
         points[i].z++;
@@ -147,4 +156,111 @@ void readStruct(int n)
     points[n].x = points[n].x - points[n].npoints;
     points[n].y = points[n].y - points[n].npoints;
     points[n].z = points[n].z - points[n].npoints;
+}
+
+void preProcessing(struct t_point_cloud *ptr){
+    int a, b, c, d, e, f;
+    
+    for(a = 0;a < ptr->npoints; a++){
+
+        if (*(ptr->x) < 0){
+
+            for(b = a+1;b < ptr->npoints;b++){
+                                    
+                *(ptr->x) = *(ptr->x+1);
+                *(ptr->y) = *(ptr->y+1);
+                *(ptr->z) = *(ptr->z+1);
+
+                ptr->x=ptr->x+1;
+                ptr->y=ptr->y+1;
+                ptr->z=ptr->z+1;
+
+            }
+
+            ptr->npoints = ptr->npoints-1;
+
+            ptr->x = ptr->x - ptr->npoints;
+            ptr->y = ptr->y - ptr->npoints;
+            ptr->z = ptr->z - ptr->npoints;
+
+            a = 0;
+        }
+               
+    ptr->x=ptr->x+1;
+    ptr->y=ptr->y+1;
+    ptr->z=ptr->z+1;
+    }
+
+    /* Resets the pointers to the initial location */
+    ptr->x = ptr->x - ptr->npoints;
+    ptr->y = ptr->y - ptr->npoints;
+    ptr->z = ptr->z - ptr->npoints;
+
+    for(c = 0;c < ptr->npoints; c++){
+
+        if (*(ptr->x)<=2 && *(ptr->y)>=-1 && *(ptr->y)<=1){
+            for(d = c+1;d < ptr->npoints;d++){
+                                    
+                *(ptr->x) = *(ptr->x+1);
+                *(ptr->y) = *(ptr->y+1);
+                *(ptr->z) = *(ptr->z+1);
+
+                ptr->x=ptr->x+1;
+                ptr->y=ptr->y+1;
+                ptr->z=ptr->z+1;
+
+            }
+
+            ptr->npoints = ptr->npoints-1;
+
+            ptr->x = ptr->x - ptr->npoints;
+            ptr->y = ptr->y - ptr->npoints;
+            ptr->z = ptr->z - ptr->npoints;
+
+            c = 0;
+        }
+               
+    ptr->x=ptr->x+1;
+    ptr->y=ptr->y+1;
+    ptr->z=ptr->z+1;
+    }
+
+    /* Resets the pointers to the initial location */
+    ptr->x = ptr->x - ptr->npoints;
+    ptr->y = ptr->y - ptr->npoints;
+    ptr->z = ptr->z - ptr->npoints;
+
+    for(e = 0;e < ptr->npoints; e++){
+
+        if (*(ptr->x)>30 || *(ptr->y)<-10 || *(ptr->y)>10){
+            for(f = e+1;f < ptr->npoints;f++){
+                                    
+                *(ptr->x) = *(ptr->x+1);
+                *(ptr->y) = *(ptr->y+1);
+                *(ptr->z) = *(ptr->z+1);
+
+                ptr->x=ptr->x+1;
+                ptr->y=ptr->y+1;
+                ptr->z=ptr->z+1;
+
+            }
+
+            ptr->npoints = ptr->npoints-1;
+
+            ptr->x = ptr->x - ptr->npoints;
+            ptr->y = ptr->y - ptr->npoints;
+            ptr->z = ptr->z - ptr->npoints;
+
+            e = 0;
+        }
+               
+    ptr->x=ptr->x+1;
+    ptr->y=ptr->y+1;
+    ptr->z=ptr->z+1;
+    }
+
+    /* Resets the pointers to the initial location */
+    ptr->x = ptr->x - ptr->npoints;
+    ptr->y = ptr->y - ptr->npoints;
+    ptr->z = ptr->z - ptr->npoints;
 }
