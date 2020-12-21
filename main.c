@@ -28,6 +28,7 @@ double getDevZ(double avg, int n);
 void freePointCloud(struct grid *g);
 void task1();
 void task3();
+void preProcessing(struct t_point_cloud *ptr);
 
 int main(int argc, char const *argv[])
 {
@@ -119,6 +120,113 @@ void readStruct(int n)
     points[n].x = points[n].x - points[n].npoints;
     points[n].y = points[n].y - points[n].npoints;
     points[n].z = points[n].z - points[n].npoints;
+}
+
+void preProcessing(struct t_point_cloud *ptr){
+    int a, b, c, d, e, f;
+    
+    for(a = 0;a < ptr->npoints; a++){
+
+        if (*(ptr->x) < 0){
+
+            for(b = a+1;b < ptr->npoints;b++){
+                                    
+                *(ptr->x) = *(ptr->x+1);
+                *(ptr->y) = *(ptr->y+1);
+                *(ptr->z) = *(ptr->z+1);
+
+                ptr->x=ptr->x+1;
+                ptr->y=ptr->y+1;
+                ptr->z=ptr->z+1;
+
+            }
+
+            ptr->npoints = ptr->npoints-1;
+
+            ptr->x = ptr->x - ptr->npoints;
+            ptr->y = ptr->y - ptr->npoints;
+            ptr->z = ptr->z - ptr->npoints;
+
+            a = 0;
+        }
+               
+    ptr->x=ptr->x+1;
+    ptr->y=ptr->y+1;
+    ptr->z=ptr->z+1;
+    }
+
+    /* Resets the pointers to the initial location */
+    ptr->x = ptr->x - ptr->npoints;
+    ptr->y = ptr->y - ptr->npoints;
+    ptr->z = ptr->z - ptr->npoints;
+
+    for(c = 0;c < ptr->npoints; c++){
+
+        if (*(ptr->x)<=2 && *(ptr->y)>=-1 && *(ptr->y)<=1){
+            for(d = c+1;d < ptr->npoints;d++){
+                                    
+                *(ptr->x) = *(ptr->x+1);
+                *(ptr->y) = *(ptr->y+1);
+                *(ptr->z) = *(ptr->z+1);
+
+                ptr->x=ptr->x+1;
+                ptr->y=ptr->y+1;
+                ptr->z=ptr->z+1;
+
+            }
+
+            ptr->npoints = ptr->npoints-1;
+
+            ptr->x = ptr->x - ptr->npoints;
+            ptr->y = ptr->y - ptr->npoints;
+            ptr->z = ptr->z - ptr->npoints;
+
+            c = 0;
+        }
+               
+    ptr->x=ptr->x+1;
+    ptr->y=ptr->y+1;
+    ptr->z=ptr->z+1;
+    }
+
+    /* Resets the pointers to the initial location */
+    ptr->x = ptr->x - ptr->npoints;
+    ptr->y = ptr->y - ptr->npoints;
+    ptr->z = ptr->z - ptr->npoints;
+
+    for(e = 0;e < ptr->npoints; e++){
+
+        if (*(ptr->x)>30 || *(ptr->y)<-10 || *(ptr->y)>10){
+            for(f = e+1;f < ptr->npoints;f++){
+                                    
+                *(ptr->x) = *(ptr->x+1);
+                *(ptr->y) = *(ptr->y+1);
+                *(ptr->z) = *(ptr->z+1);
+
+                ptr->x=ptr->x+1;
+                ptr->y=ptr->y+1;
+                ptr->z=ptr->z+1;
+
+            }
+
+            ptr->npoints = ptr->npoints-1;
+
+            ptr->x = ptr->x - ptr->npoints;
+            ptr->y = ptr->y - ptr->npoints;
+            ptr->z = ptr->z - ptr->npoints;
+
+            e = 0;
+        }
+               
+    ptr->x=ptr->x+1;
+    ptr->y=ptr->y+1;
+    ptr->z=ptr->z+1;
+    }
+
+    /* Resets the pointers to the initial location */
+    ptr->x = ptr->x - ptr->npoints;
+    ptr->y = ptr->y - ptr->npoints;
+    ptr->z = ptr->z - ptr->npoints;
 }
 
 /*
