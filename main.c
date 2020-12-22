@@ -10,6 +10,8 @@
 #include <sys/mman.h>
 #include "timespec.h"
 #include "grid.h"
+#include <time.h>
+#include <unistd.h>
 
 //Struct with the input of the thread function call
 struct threadInput
@@ -19,6 +21,9 @@ struct threadInput
     struct timespec period;
     struct timespec start;
 };
+enum { NS_PER_SECOND = 1000000000 };
+
+struct t_point_cloud points[3]; /* 3 arrays com os as structs das coordenadas */
 
 struct t_point_cloud points; /* 3 arrays com os as structs das coordenadas */
 pthread_mutex_t lock;        /* Semaphore to lock global point cloud */
@@ -44,6 +49,7 @@ void freePointCloud(struct grid *g);
 void task1(int n);
 void task3(int n);
 void preProcessing(struct t_point_cloud *ptr);
+void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td);
 void preProcessing2(int n);
 void *performWork(void *input);
 void resetPointCloud();
@@ -52,6 +58,27 @@ pthread_t thread[3];
 
 int main(int argc, char const *argv[])
 {
+    struct timespec start, finish, delta;
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    task1();
+    clock_gettime(CLOCK_REALTIME, &finish);
+    sub_timespec(start, finish, &delta);
+    printf("Time task1: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    task2();
+    clock_gettime(CLOCK_REALTIME, &finish);
+    sub_timespec(start, finish, &delta);
+    printf("Time task2: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+
+
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    task3();
+    clock_gettime(CLOCK_REALTIME, &finish);
+    sub_timespec(start, finish, &delta);
+    printf("Time task3: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
     struct timespec start;
     struct threadInput input[3];
     int periodos = 1000000;
@@ -873,4 +900,20 @@ void resetPointCloud()
     points.z = NULL;
 
     points.npoints = 0;
+}
+
+void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td)
+{
+    td->tv_nsec = t2.tv_nsec - t1.tv_nsec;
+    td->tv_sec  = t2.tv_sec - t1.tv_sec;
+    if (td->tv_sec > 0 && td->tv_nsec < 0)
+    {
+        td->tv_nsec += NS_PER_SECOND;
+        td->tv_sec--;
+    }
+    else if (td->tv_sec < 0 && td->tv_nsec > 0)
+    {
+        td->tv_nsec -= NS_PER_SECOND;
+        td->tv_sec++;
+    }
 }
