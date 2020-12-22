@@ -6,8 +6,13 @@
 #include <float.h>
 #include <stdlib.h>
 #include "grid.h"
+#include <time.h>
+#include <unistd.h>
+
+enum { NS_PER_SECOND = 1000000000 };
 
 struct t_point_cloud points[3]; /* 3 arrays com os as structs das coordenadas */
+
 
 int getNPoints(char *filename);
 void resetPointers(int j);
@@ -27,13 +32,34 @@ double getDevY(double avg, int n);
 double getDevZ(double avg, int n);
 void freePointCloud(struct grid *g);
 void task1();
+void task2();
 void task3();
 void preProcessing(struct t_point_cloud *ptr);
+void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td);
 
 int main(int argc, char const *argv[])
 {
+    struct timespec start, finish, delta;
+
+    clock_gettime(CLOCK_REALTIME, &start);
     task1();
+    clock_gettime(CLOCK_REALTIME, &finish);
+    sub_timespec(start, finish, &delta);
+    printf("Time task1: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    task2();
+    clock_gettime(CLOCK_REALTIME, &finish);
+    sub_timespec(start, finish, &delta);
+    printf("Time task2: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+
+
+
+    clock_gettime(CLOCK_REALTIME, &start);
     task3();
+    clock_gettime(CLOCK_REALTIME, &finish);
+    sub_timespec(start, finish, &delta);
+    printf("Time task3: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
 
     free(points[0].x);
 
@@ -599,6 +625,13 @@ void task1()
     loadFile(file_name3, 2);
 }
 
+void task2()
+{
+    preProcessing(&points[0]);
+    preProcessing(&points[1]);
+    preProcessing(&points[2]);
+}
+
 void task3()
 { 
     struct coord tl;
@@ -629,4 +662,20 @@ void task3()
     }
      
     freeGrid(&g);
+}
+
+void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td)
+{
+    td->tv_nsec = t2.tv_nsec - t1.tv_nsec;
+    td->tv_sec  = t2.tv_sec - t1.tv_sec;
+    if (td->tv_sec > 0 && td->tv_nsec < 0)
+    {
+        td->tv_nsec += NS_PER_SECOND;
+        td->tv_sec--;
+    }
+    else if (td->tv_sec < 0 && td->tv_nsec > 0)
+    {
+        td->tv_nsec -= NS_PER_SECOND;
+        td->tv_sec++;
+    }
 }
