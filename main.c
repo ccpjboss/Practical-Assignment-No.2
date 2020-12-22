@@ -27,6 +27,7 @@ struct t_point_cloud points; /* 3 arrays com os as structs das coordenadas */
 pthread_mutex_t lock;        /* Semaphore to lock global point cloud */
 int myIdx = 0;               /* Variable that stores the idx of the file read */
 
+
 int getNPoints(char *filename);
 void resetPointers(int j);
 void loadFile(char *filename);
@@ -45,12 +46,12 @@ double getDevY(double avg);
 double getDevZ(double avg);
 void freePointCloud(struct grid *g);
 void task1(int n);
+void task2(int n);
 void task3(int n);
-void preProcessing(struct t_point_cloud *ptr);
 void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td);
-void preProcessing2(int n);
 void *performWork(void *input);
 void resetPointCloud();
+void deleteIdx(int idx);
 
 pthread_t thread[3];
 
@@ -581,245 +582,26 @@ void task1(int n)
     pthread_mutex_unlock(&lock);
 }
 
-void preProcessing2(int n)
+void task2(int n)
 {
     printf("Doing pre processing...\n");
     /* LOCK */
     pthread_mutex_lock(&lock);
-    struct t_point_cloud *ptr;
-    ptr = &points;
-    int a, b, c, d, e, f;
+    int a;
 
-    for (a = 0; a < ptr->npoints; a++)
+    for (a = 0; a < points.npoints; a++)
     {
-
-        if (*(ptr->x) < 0)
+        if (points.x[a] < 0 || (points.x[a] <= 2 && points.y[a] >= -1 && points.y[a] <= 1 ) || points.x[a] > 30 || points.y[a] < -10 || points.y[a] > 10)
         {
+            deleteIdx(a+1);
 
-            for (b = a + 1; b < ptr->npoints; b++)
-            {
-
-                *(ptr->x) = *(ptr->x + 1);
-                *(ptr->y) = *(ptr->y + 1);
-                *(ptr->z) = *(ptr->z + 1);
-
-                ptr->x = ptr->x + 1;
-                ptr->y = ptr->y + 1;
-                ptr->z = ptr->z + 1;
-            }
-
-            ptr->npoints = ptr->npoints - 1;
-
-            ptr->x = ptr->x - ptr->npoints;
-            ptr->y = ptr->y - ptr->npoints;
-            ptr->z = ptr->z - ptr->npoints;
-
-            a = 0;
+            a--;
         }
-
-        ptr->x = ptr->x + 1;
-        ptr->y = ptr->y + 1;
-        ptr->z = ptr->z + 1;
     }
-
-    /* Resets the pointers to the initial location */
-    ptr->x = ptr->x - ptr->npoints;
-    ptr->y = ptr->y - ptr->npoints;
-    ptr->z = ptr->z - ptr->npoints;
-
-    for (c = 0; c < ptr->npoints; c++)
-    {
-
-        if (*(ptr->x) <= 2 && *(ptr->y) >= -1 && *(ptr->y) <= 1)
-        {
-            for (d = c + 1; d < ptr->npoints; d++)
-            {
-
-                *(ptr->x) = *(ptr->x + 1);
-                *(ptr->y) = *(ptr->y + 1);
-                *(ptr->z) = *(ptr->z + 1);
-
-                ptr->x = ptr->x + 1;
-                ptr->y = ptr->y + 1;
-                ptr->z = ptr->z + 1;
-            }
-
-            ptr->npoints = ptr->npoints - 1;
-
-            ptr->x = ptr->x - ptr->npoints;
-            ptr->y = ptr->y - ptr->npoints;
-            ptr->z = ptr->z - ptr->npoints;
-
-            c = 0;
-        }
-
-        ptr->x = ptr->x + 1;
-        ptr->y = ptr->y + 1;
-        ptr->z = ptr->z + 1;
-    }
-
-    /* Resets the pointers to the initial location */
-    ptr->x = ptr->x - ptr->npoints;
-    ptr->y = ptr->y - ptr->npoints;
-    ptr->z = ptr->z - ptr->npoints;
-
-    for (e = 0; e < ptr->npoints; e++)
-    {
-
-        if (*(ptr->x) > 30 || *(ptr->y) < -10 || *(ptr->y) > 10)
-        {
-            for (f = e + 1; f < ptr->npoints; f++)
-            {
-
-                *(ptr->x) = *(ptr->x + 1);
-                *(ptr->y) = *(ptr->y + 1);
-                *(ptr->z) = *(ptr->z + 1);
-
-                ptr->x = ptr->x + 1;
-                ptr->y = ptr->y + 1;
-                ptr->z = ptr->z + 1;
-            }
-
-            ptr->npoints = ptr->npoints - 1;
-
-            ptr->x = ptr->x - ptr->npoints;
-            ptr->y = ptr->y - ptr->npoints;
-            ptr->z = ptr->z - ptr->npoints;
-
-            e = 0;
-        }
-
-        ptr->x = ptr->x + 1;
-        ptr->y = ptr->y + 1;
-        ptr->z = ptr->z + 1;
-    }
-
-    /* Resets the pointers to the initial location */
-    ptr->x = ptr->x - ptr->npoints;
-    ptr->y = ptr->y - ptr->npoints;
-    ptr->z = ptr->z - ptr->npoints;
 
     pthread_mutex_unlock(&lock);
     /* UNLOCK */
     printf("npoints: %d\n", points.npoints);
-}
-
-void preProcessing(struct t_point_cloud *ptr)
-{
-    /* LOCK */
-    pthread_mutex_lock(&lock);
-    int a, b, c, d, e, f;
-
-    for (a = 0; a < ptr->npoints; a++)
-    {
-
-        if (*(ptr->x) < 0)
-        {
-
-            for (b = a + 1; b < ptr->npoints; b++)
-            {
-
-                *(ptr->x) = *(ptr->x + 1);
-                *(ptr->y) = *(ptr->y + 1);
-                *(ptr->z) = *(ptr->z + 1);
-
-                ptr->x = ptr->x + 1;
-                ptr->y = ptr->y + 1;
-                ptr->z = ptr->z + 1;
-            }
-
-            ptr->npoints = ptr->npoints - 1;
-
-            ptr->x = ptr->x - ptr->npoints;
-            ptr->y = ptr->y - ptr->npoints;
-            ptr->z = ptr->z - ptr->npoints;
-
-            a = 0;
-        }
-
-        ptr->x = ptr->x + 1;
-        ptr->y = ptr->y + 1;
-        ptr->z = ptr->z + 1;
-    }
-
-    /* Resets the pointers to the initial location */
-    ptr->x = ptr->x - ptr->npoints;
-    ptr->y = ptr->y - ptr->npoints;
-    ptr->z = ptr->z - ptr->npoints;
-
-    for (c = 0; c < ptr->npoints; c++)
-    {
-
-        if (*(ptr->x) <= 2 && *(ptr->y) >= -1 && *(ptr->y) <= 1)
-        {
-            for (d = c + 1; d < ptr->npoints; d++)
-            {
-
-                *(ptr->x) = *(ptr->x + 1);
-                *(ptr->y) = *(ptr->y + 1);
-                *(ptr->z) = *(ptr->z + 1);
-
-                ptr->x = ptr->x + 1;
-                ptr->y = ptr->y + 1;
-                ptr->z = ptr->z + 1;
-            }
-
-            ptr->npoints = ptr->npoints - 1;
-
-            ptr->x = ptr->x - ptr->npoints;
-            ptr->y = ptr->y - ptr->npoints;
-            ptr->z = ptr->z - ptr->npoints;
-
-            c = 0;
-        }
-
-        ptr->x = ptr->x + 1;
-        ptr->y = ptr->y + 1;
-        ptr->z = ptr->z + 1;
-    }
-
-    /* Resets the pointers to the initial location */
-    ptr->x = ptr->x - ptr->npoints;
-    ptr->y = ptr->y - ptr->npoints;
-    ptr->z = ptr->z - ptr->npoints;
-
-    for (e = 0; e < ptr->npoints; e++)
-    {
-
-        if (*(ptr->x) > 30 || *(ptr->y) < -10 || *(ptr->y) > 10)
-        {
-            for (f = e + 1; f < ptr->npoints; f++)
-            {
-
-                *(ptr->x) = *(ptr->x + 1);
-                *(ptr->y) = *(ptr->y + 1);
-                *(ptr->z) = *(ptr->z + 1);
-
-                ptr->x = ptr->x + 1;
-                ptr->y = ptr->y + 1;
-                ptr->z = ptr->z + 1;
-            }
-
-            ptr->npoints = ptr->npoints - 1;
-
-            ptr->x = ptr->x - ptr->npoints;
-            ptr->y = ptr->y - ptr->npoints;
-            ptr->z = ptr->z - ptr->npoints;
-
-            e = 0;
-        }
-
-        ptr->x = ptr->x + 1;
-        ptr->y = ptr->y + 1;
-        ptr->z = ptr->z + 1;
-    }
-
-    /* Resets the pointers to the initial location */
-    ptr->x = ptr->x - ptr->npoints;
-    ptr->y = ptr->y - ptr->npoints;
-    ptr->z = ptr->z - ptr->npoints;
-    pthread_mutex_unlock(&lock);
-    /* UNLOCK */
 }
 
 void task3(int n)
@@ -862,7 +644,8 @@ void task3(int n)
 void *performWork(void *input)
 {
     struct threadInput *in = (struct threadInput *)input;
-    struct timespec start, next;
+    struct timespec start, finish, next, delta;
+
     next = in->start;
     if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL) != 0)
     {
@@ -871,20 +654,29 @@ void *performWork(void *input)
     }
     if (in->task == 0)
     {
-        if (clock_gettime(CLOCK_MONOTONIC, &start) == -1)
-        {
-            perror("clock_gettime");
-        }
-        printf("Thread 1 activation: %0.2LF\n", timeToMs(start));
+        clock_gettime(CLOCK_REALTIME, &start);
         task1(myIdx);
+        clock_gettime(CLOCK_REALTIME, &finish);
+        sub_timespec(start, finish, &delta);
+        printf("Time task1: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+    
     }
     if (in->task == 1)
     {
-        preProcessing2(myIdx);
+        clock_gettime(CLOCK_REALTIME, &start);
+        task2(myIdx);
+        clock_gettime(CLOCK_REALTIME, &finish);
+        sub_timespec(start, finish, &delta);
+        printf("Time task2: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+        
     }
     if (in->task == 2)
     {
+        clock_gettime(CLOCK_REALTIME, &start);
         task3(myIdx);
+        clock_gettime(CLOCK_REALTIME, &finish);
+        sub_timespec(start, finish, &delta);
+        printf("Time task3: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
     }
 
     pthread_exit(NULL);
@@ -917,4 +709,40 @@ void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td)
         td->tv_nsec -= NS_PER_SECOND;
         td->tv_sec++;
     }
+}
+
+void deleteIdx(int idx)
+{
+    /* Gets the address of the number to eliminate */
+    double *curx = points.x + idx - 1;
+    double *cury = points.y + idx - 1;
+    double *curz = points.z + idx - 1;
+
+    /* Saves the start address to come back to the start */
+    double *startx = points.x;
+    double *starty = points.y;
+    double *startz = points.z;
+
+    /* Puts the last value of the struct into the point to eliminate */
+    *curx = *(points.x + points.npoints - 1);
+    *cury = *(points.y + points.npoints - 1);
+    *curz = *(points.z + points.npoints - 1);
+
+    /* Goes to the last element of the struct */
+    points.x = points.x + points.npoints - 1;
+    points.y = points.y + points.npoints - 1;
+    points.z = points.z + points.npoints - 1;
+
+    /* Puts the last value equal to NULL. This is not a problem because the last number is already saved to on the address to eliminate */
+    points.x = NULL;
+    points.y = NULL;
+    points.z = NULL;
+
+    /* Goes back to the start */
+    points.x = startx;
+    points.y = starty;
+    points.z = startz;
+
+    /* Updates the total of points */
+    points.npoints--;
 }

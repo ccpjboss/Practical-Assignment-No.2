@@ -5,7 +5,7 @@
 #include <float.h>
 
 #define SQSIDE 30 /* Side of the grid */
-#define NSQUARES 9 /* Number of squares to divide the grid into */
+#define NSQUARES 16 /* Number of squares to divide the grid into */
 
 /* Used for square coordinates */
 struct coord
