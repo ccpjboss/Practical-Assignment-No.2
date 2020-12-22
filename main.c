@@ -18,12 +18,11 @@ struct threadInput
     int task;
     struct timespec period;
     struct timespec start;
-    struct timespec end;
 };
 
-struct t_point_cloud points[3]; /* 3 arrays com os as structs das coordenadas */
-pthread_mutex_t lock;           /* Semaphore to lock global point cloud */
-int myIdx = 0;                  /* Variable that stores the idx of the file read */
+struct t_point_cloud points; /* 3 arrays com os as structs das coordenadas */
+pthread_mutex_t lock;        /* Semaphore to lock global point cloud */
+int myIdx = 0;               /* Variable that stores the idx of the file read */
 
 int getNPoints(char *filename);
 void resetPointers(int j);
@@ -47,20 +46,15 @@ void task3(int n);
 void preProcessing(struct t_point_cloud *ptr);
 void preProcessing2(int n);
 void *performWork(void *input);
+void resetPointCloud();
 
 pthread_t thread[3];
 
 int main(int argc, char const *argv[])
 {
-    struct timespec start, finish;
+    struct timespec start;
     struct threadInput input[3];
     int periodos = 1000000;
-
-    //Prevents the memory from being paged to the swap area
-    if (mlockall(MCL_CURRENT | MCL_FUTURE) == -1)
-    {
-        perror("mklockall");
-    }
 
     /* Setting the start time and finish time */
     if (clock_gettime(CLOCK_MONOTONIC, &start) == -1) //Gets the universal start time
@@ -69,19 +63,29 @@ int main(int argc, char const *argv[])
     }
 
     start = timeSum(start, timespecFormat((int)2, 0)); //Adds 3 seconds to the start time to make sure that all the thread are created
-    finish = timeSum(start, timespecFormat((int)10, 0));
 
     for (int i = 0; i < 3; i++)
     {
         input[i].task = i;
         input[i].period = timespecFormat(0, periodos);
         input[i].start = start;
-        input[i].end = finish;
     }
-    struct timespec p;
-    p=timespecFormat(0,periodos);
+
+    struct timespec start_time;
+
+    if (pthread_mutex_init(&lock, NULL) != 0)
+    {
+        printf("\n mutex init has failed\n");
+        return 1;
+    }
+
+    if (clock_gettime(CLOCK_MONOTONIC, &start_time) == -1) //Gets the universal start time
+    {
+        perror("clock_gettime(start)");
+    }
 
     for (int j = 0; j < 3; j++)
+    //while (1)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -89,19 +93,28 @@ int main(int argc, char const *argv[])
             {
                 perror("pthread_create");
             }
-
             if (pthread_join(thread[i], NULL) != 0)
             {
                 perror("thread join");
             }
         }
-        if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &p, NULL) != 0)
+
+        /*for (int i = 0; i < 3; i++)
         {
-            perror("nanosleep");
-            pthread_exit(NULL);
+            if (pthread_join(thread[i], NULL) != 0)
+            {
+                perror("thread join");
+            }
         }
+        */
+
+        resetPointCloud();
         myIdx++;
+        if (myIdx == 3)
+            myIdx = 0;
     }
+
+    pthread_mutex_destroy(&lock);
     return 0;
 }
 
@@ -155,17 +168,17 @@ void loadFile(char *filename, int i)
         exit(EXIT_FAILURE);
     }
 
-    while (fscanf(file, "%lf%lf%lf", points[i].x, points[i].y, points[i].z) != EOF)
+    while (fscanf(file, "%lf%lf%lf", points.x, points.y, points.z) != EOF)
     {
-        points[i].x++;
-        points[i].y++;
-        points[i].z++;
+        points.x++;
+        points.y++;
+        points.z++;
     }
 
     /* Resets the pointers to the initial location */
-    points[i].x = points[i].x - points[i].npoints;
-    points[i].y = points[i].y - points[i].npoints;
-    points[i].z = points[i].z - points[i].npoints;
+    points.x = points.x - points.npoints;
+    points.y = points.y - points.npoints;
+    points.z = points.z - points.npoints;
 
     fclose(file);
 }
@@ -173,18 +186,18 @@ void loadFile(char *filename, int i)
 /* Use this for debug */
 void readStruct(int n)
 {
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
-        printf("%lf %lf %lf\n", *(points[n].x), *(points[n].y), *(points[n].z));
-        points[n].x++;
-        points[n].y++;
-        points[n].z++;
+        printf("%lf %lf %lf\n", *(points.x), *(points.y), *(points.z));
+        points.x++;
+        points.y++;
+        points.z++;
     }
 
     /* Resets the pointers to the initial location */
-    points[n].x = points[n].x - points[n].npoints;
-    points[n].y = points[n].y - points[n].npoints;
-    points[n].z = points[n].z - points[n].npoints;
+    points.x = points.x - points.npoints;
+    points.y = points.y - points.npoints;
+    points.z = points.z - points.npoints;
 }
 
 /*
@@ -200,9 +213,9 @@ double *getMinX(int n)
 {
     double min_value = DBL_MAX;   /* High value so it gets replaced */
     double *min_value_ptr = NULL; /* Pointer pointing to the lowerst x pointer */
-    double *cur = points[n].x;    /* Double pointer to search the x  points */
+    double *cur = points.x;       /* Double pointer to search the x  points */
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         if (*(cur) < min_value)
         {
@@ -227,9 +240,9 @@ double *getMinY(int n)
 {
     double min_value = DBL_MAX;
     double *min_value_ptr = NULL;
-    double *cur = points[n].y; /* Double pointer to search the x  points */
+    double *cur = points.y; /* Double pointer to search the x  points */
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         if (*(cur) < min_value)
         {
@@ -255,9 +268,9 @@ double *getMinZ(int n)
 {
     double min_value = DBL_MAX;
     double *min_value_ptr = NULL;
-    double *cur = points[n].z; /* Double pointer to search the x  points */
+    double *cur = points.z; /* Double pointer to search the x  points */
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         if (*(cur) < min_value)
         {
@@ -283,9 +296,9 @@ double *getMaxX(int n)
 {
     double max_value = DBL_MIN;
     double *max_value_ptr = NULL;
-    double *cur = points[n].x; /* Double pointer to search the x  points */
+    double *cur = points.x; /* Double pointer to search the x  points */
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         if (*(cur) > max_value)
         {
@@ -311,9 +324,9 @@ double *getMaxY(int n)
 {
     double max_value = DBL_MIN;
     double *max_value_ptr = NULL;
-    double *cur = points[n].y; /* Double pointer to search the y points */
+    double *cur = points.y; /* Double pointer to search the y points */
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         if (*(cur) > max_value)
         {
@@ -339,9 +352,9 @@ double *getMaxZ(int n)
 {
     double max_value = DBL_MIN;
     double *max_value_ptr = NULL;
-    double *cur = points[n].z; /* Double pointer to search the Z points */
+    double *cur = points.z; /* Double pointer to search the Z points */
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         if (*(cur) > max_value)
         {
@@ -365,16 +378,16 @@ double *getMaxZ(int n)
  */
 double getAvgX(int n)
 {
-    double *cur = points[n].x; /* Double pointer to search the x points */
+    double *cur = points.x; /* Double pointer to search the x points */
     double sum = 0;
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         sum = sum + *(cur);
         cur = cur + 1;
     }
 
-    return sum / points[n].npoints;
+    return sum / points.npoints;
 }
 
 /*
@@ -388,16 +401,16 @@ double getAvgX(int n)
  */
 double getAvgY(int n)
 {
-    double *cur = points[n].y; /* Double pointer to search the y points */
+    double *cur = points.y; /* Double pointer to search the y points */
     double sum = 0;
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         sum = sum + *(cur);
         cur = cur + 1;
     }
 
-    return sum / points[n].npoints;
+    return sum / points.npoints;
 }
 
 /*
@@ -411,16 +424,16 @@ double getAvgY(int n)
  */
 double getAvgZ(int n)
 {
-    double *cur = points[n].z; /* Double pointer to search the z points */
+    double *cur = points.z; /* Double pointer to search the z points */
     double sum = 0;
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         sum = sum + *(cur);
         cur = cur + 1;
     }
 
-    return sum / points[n].npoints;
+    return sum / points.npoints;
 }
 
 /*
@@ -436,17 +449,17 @@ double getAvgZ(int n)
  */
 double getDevX(double avg, int n)
 {
-    double *cur = points[n].x; /* Double pointer to search the x points */
+    double *cur = points.x; /* Double pointer to search the x points */
     double sum = 0;
     double variance = 0;
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         sum = sum + pow(*(cur)-avg, 2);
         cur = cur + 1;
     }
 
-    variance = sum / points[n].npoints;
+    variance = sum / points.npoints;
     return sqrt(variance);
 }
 
@@ -463,17 +476,17 @@ double getDevX(double avg, int n)
  */
 double getDevY(double avg, int n)
 {
-    double *cur = points[n].y; /* Double pointer to search the y points */
+    double *cur = points.y; /* Double pointer to search the y points */
     double sum = 0;
     double variance = 0;
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         sum = sum + pow(*(cur)-avg, 2);
         cur = cur + 1;
     }
 
-    variance = sum / points[n].npoints;
+    variance = sum / points.npoints;
     return sqrt(variance);
 }
 
@@ -490,17 +503,17 @@ double getDevY(double avg, int n)
  */
 double getDevZ(double avg, int n)
 {
-    double *cur = points[n].z; /* Double pointer to search the z points */
+    double *cur = points.z; /* Double pointer to search the z points */
     double sum = 0;
     double variance = 0;
 
-    for (int i = 0; i < points[n].npoints; i++)
+    for (int i = 0; i < points.npoints; i++)
     {
         sum = sum + pow(*(cur)-avg, 2);
         cur = cur + 1;
     }
 
-    variance = sum / points[n].npoints;
+    variance = sum / points.npoints;
     return sqrt(variance);
 }
 
@@ -516,16 +529,17 @@ void task1(int n)
 
     /* gets the number os coordinates presented on the files */
     if (n == 0)
-        points[n].npoints = getNPoints(file_name1);
+        points.npoints = getNPoints(file_name1);
     if (n == 1)
-        points[n].npoints = getNPoints(file_name2);
+        points.npoints = getNPoints(file_name2);
     if (n == 2)
-        points[n].npoints = getNPoints(file_name3);
-    printf("npoints: %d\n", points[n].npoints);
+        points.npoints = getNPoints(file_name3);
+    printf("npoints: %d\n", points.npoints);
+
     /* Allocates the memory for the coordinates */
-    points[n].x = (double *)malloc(points[n].npoints * sizeof(double));
-    points[n].y = (double *)malloc(points[n].npoints * sizeof(double));
-    points[n].z = (double *)malloc(points[n].npoints * sizeof(double));
+    points.x = (double *)malloc(points.npoints * sizeof(double));
+    points.y = (double *)malloc(points.npoints * sizeof(double));
+    points.z = (double *)malloc(points.npoints * sizeof(double));
 
     /* Loads the data structs with the file content */
     if (n == 0)
@@ -534,6 +548,7 @@ void task1(int n)
         loadFile(file_name2, 1);
     if (n == 2)
         loadFile(file_name3, 2);
+
     /* UNLOCK */
     pthread_mutex_unlock(&lock);
 }
@@ -544,7 +559,7 @@ void preProcessing2(int n)
     /* LOCK */
     pthread_mutex_lock(&lock);
     struct t_point_cloud *ptr;
-    ptr = &points[n];
+    ptr = &points;
     int a, b, c, d, e, f;
 
     for (a = 0; a < ptr->npoints; a++)
@@ -658,7 +673,7 @@ void preProcessing2(int n)
 
     pthread_mutex_unlock(&lock);
     /* UNLOCK */
-    printf("npoints: %d\n", points[n].npoints);
+    printf("npoints: %d\n", points.npoints);
 }
 
 void preProcessing(struct t_point_cloud *ptr)
@@ -795,7 +810,7 @@ void task3(int n)
     printf("Loading the points to the grid...\n");
     /* lock */
     pthread_mutex_lock(&lock);
-    loadPointsGrid(&g, points[n]);
+    loadPointsGrid(&g, points);
     pthread_mutex_unlock(&lock);
     /* unlock */
     printf("Checking for road squares\n");
@@ -819,17 +834,20 @@ void task3(int n)
 void *performWork(void *input)
 {
     struct threadInput *in = (struct threadInput *)input;
-    struct timespec next;
+    struct timespec start, finish, next;
     next = in->start;
-
     if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL) != 0)
     {
         perror("nanosleep");
         pthread_exit(NULL);
     }
-
     if (in->task == 0)
     {
+        if (clock_gettime(CLOCK_MONOTONIC, &start) == -1)
+        {
+            perror("clock_gettime");
+        }
+        printf("Thread 1 activation: %0.2LF\n", timeToMs(start));
         task1(myIdx);
     }
     if (in->task == 1)
@@ -842,4 +860,17 @@ void *performWork(void *input)
     }
 
     pthread_exit(NULL);
+}
+
+void resetPointCloud()
+{
+    free(points.x);
+    free(points.y);
+    free(points.z);
+
+    points.x = NULL;
+    points.y = NULL;
+    points.z = NULL;
+
+    points.npoints = 0;
 }
