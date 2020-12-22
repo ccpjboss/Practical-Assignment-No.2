@@ -21,7 +21,10 @@ struct threadInput
     struct timespec period;
     struct timespec start;
 };
-enum { NS_PER_SECOND = 1000000000 };
+enum
+{
+    NS_PER_SECOND = 1000000000
+};
 
 struct t_point_cloud points; /* 3 arrays com os as structs das coordenadas */
 pthread_mutex_t lock;        /* Semaphore to lock global point cloud */
@@ -31,7 +34,6 @@ int t1s = 0;
 long int t1ns = 0;
 int t2s = 0;
 long int t2ns = 0;
-
 
 int getNPoints(char *filename);
 void resetPointers(int j);
@@ -62,7 +64,7 @@ pthread_t thread[3];
 
 int main(int argc, char const *argv[])
 {
-   struct timespec start;
+    struct timespec start;
     struct threadInput input[3];
     int periodos = 1000000;
 
@@ -103,19 +105,19 @@ int main(int argc, char const *argv[])
             {
                 perror("pthread_create");
             }
-                     
-            if (i==0 && j==0)
+
+            if (i == 0 && j == 0)
             {
                 clock_gettime(CLOCK_REALTIME, &act1);
             }
 
-            if (i==0 && j==1)
+            if (i == 0 && j == 1)
             {
                 clock_gettime(CLOCK_REALTIME, &act2);
                 sub_timespec(act1, act2, &delta1);
                 printf("Time Activation1: %d.%.9ld\n", (int)delta1.tv_sec, delta1.tv_nsec);
             }
-            
+
             if (pthread_join(thread[i], NULL) != 0)
             {
                 perror("thread join");
@@ -577,24 +579,24 @@ void task1(int n)
     double avg = getAvgX();
     double std = getDevX(avg);
 
-    printf("X values for file: %d\n",n+1);
-    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n",*min,*max,avg,std);
+    printf("X values for file: %d\n", n + 1);
+    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n", *min, *max, avg, std);
 
     min = getMinY();
     max = getMaxY();
     avg = getAvgY();
     std = getDevY(avg);
 
-    printf("Y values for file: %d\n",n+1);
-    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n",*min,*max,avg,std);
+    printf("Y values for file: %d\n", n + 1);
+    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n", *min, *max, avg, std);
 
     min = getMinZ();
     max = getMaxZ();
     avg = getAvgZ();
     std = getDevZ(avg);
 
-    printf("Z values for file: %d\n",n+1);
-    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n",*min,*max,avg,std);
+    printf("Z values for file: %d\n", n + 1);
+    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n", *min, *max, avg, std);
 
     /* UNLOCK */
     pthread_mutex_unlock(&lock);
@@ -609,9 +611,9 @@ void task2(int n)
 
     for (a = 0; a < points.npoints; a++)
     {
-        if (points.x[a] < 0 || (points.x[a] <= 2 && points.y[a] >= -1 && points.y[a] <= 1 ) || points.x[a] > 30 || points.y[a] < -10 || points.y[a] > 10)
+        if (points.x[a] < 0 || (points.x[a] <= 2 && points.y[a] >= -1 && points.y[a] <= 1) || points.x[a] > 30 || points.y[a] < -10 || points.y[a] > 10)
         {
-            deleteIdx(a+1);
+            deleteIdx(a + 1);
 
             a--;
         }
@@ -677,8 +679,6 @@ void *performWork(void *input)
         clock_gettime(CLOCK_REALTIME, &finish);
         sub_timespec(start, finish, &delta);
         printf("Time task1: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-        
-    
     }
     if (in->task == 1)
     {
@@ -687,7 +687,6 @@ void *performWork(void *input)
         clock_gettime(CLOCK_REALTIME, &finish);
         sub_timespec(start, finish, &delta);
         printf("Time task2: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-        
     }
     if (in->task == 2)
     {
@@ -717,7 +716,7 @@ void resetPointCloud()
 void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td)
 {
     td->tv_nsec = t2.tv_nsec - t1.tv_nsec;
-    td->tv_sec  = t2.tv_sec - t1.tv_sec;
+    td->tv_sec = t2.tv_sec - t1.tv_sec;
     if (td->tv_sec > 0 && td->tv_nsec < 0)
     {
         td->tv_nsec += NS_PER_SECOND;
