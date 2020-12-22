@@ -23,28 +23,26 @@ struct threadInput
 };
 enum { NS_PER_SECOND = 1000000000 };
 
-struct t_point_cloud points[3]; /* 3 arrays com os as structs das coordenadas */
-
 struct t_point_cloud points; /* 3 arrays com os as structs das coordenadas */
 pthread_mutex_t lock;        /* Semaphore to lock global point cloud */
 int myIdx = 0;               /* Variable that stores the idx of the file read */
 
 int getNPoints(char *filename);
 void resetPointers(int j);
-void loadFile(char *filename, int i);
-void readStruct(int n);
-double *getMinX(int n);
-double *getMinY(int n);
-double *getMinZ(int n);
-double *getMaxX(int n);
-double *getMaxY(int n);
-double *getMaxZ(int n);
-double getAvgX(int n);
-double getAvgY(int n);
-double getAvgZ(int n);
-double getDevX(double avg, int n);
-double getDevY(double avg, int n);
-double getDevZ(double avg, int n);
+void loadFile(char *filename);
+void readStruct();
+double *getMinX();
+double *getMinY();
+double *getMinZ();
+double *getMaxX();
+double *getMaxY();
+double *getMaxZ();
+double getAvgX();
+double getAvgY();
+double getAvgZ();
+double getDevX(double avg);
+double getDevY(double avg);
+double getDevZ(double avg);
 void freePointCloud(struct grid *g);
 void task1(int n);
 void task3(int n);
@@ -58,28 +56,7 @@ pthread_t thread[3];
 
 int main(int argc, char const *argv[])
 {
-    struct timespec start, finish, delta;
-
-    clock_gettime(CLOCK_REALTIME, &start);
-    task1();
-    clock_gettime(CLOCK_REALTIME, &finish);
-    sub_timespec(start, finish, &delta);
-    printf("Time task1: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-
-    clock_gettime(CLOCK_REALTIME, &start);
-    task2();
-    clock_gettime(CLOCK_REALTIME, &finish);
-    sub_timespec(start, finish, &delta);
-    printf("Time task2: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-
-
-
-    clock_gettime(CLOCK_REALTIME, &start);
-    task3();
-    clock_gettime(CLOCK_REALTIME, &finish);
-    sub_timespec(start, finish, &delta);
-    printf("Time task3: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-    struct timespec start;
+   struct timespec start;
     struct threadInput input[3];
     int periodos = 1000000;
 
@@ -185,7 +162,7 @@ int getNPoints(char *filename)
  * 
  *  returns: void
  */
-void loadFile(char *filename, int i)
+void loadFile(char *filename)
 {
     FILE *file = fopen(filename, "r");
 
@@ -211,7 +188,7 @@ void loadFile(char *filename, int i)
 }
 
 /* Use this for debug */
-void readStruct(int n)
+void readStruct()
 {
     for (int i = 0; i < points.npoints; i++)
     {
@@ -236,7 +213,7 @@ void readStruct(int n)
  * 
  *  returns: a pointer pointing to the lowest value of x
  */
-double *getMinX(int n)
+double *getMinX()
 {
     double min_value = DBL_MAX;   /* High value so it gets replaced */
     double *min_value_ptr = NULL; /* Pointer pointing to the lowerst x pointer */
@@ -263,7 +240,7 @@ double *getMinX(int n)
  * 
  *  returns: a pointer pointing to the lowest value of y
  */
-double *getMinY(int n)
+double *getMinY()
 {
     double min_value = DBL_MAX;
     double *min_value_ptr = NULL;
@@ -291,7 +268,7 @@ double *getMinY(int n)
  * 
  *  returns: a pointer pointing to the lowest value of Z
  */
-double *getMinZ(int n)
+double *getMinZ()
 {
     double min_value = DBL_MAX;
     double *min_value_ptr = NULL;
@@ -319,7 +296,7 @@ double *getMinZ(int n)
  * 
  *  returns: a pointer pointing to the max value of X
  */
-double *getMaxX(int n)
+double *getMaxX()
 {
     double max_value = DBL_MIN;
     double *max_value_ptr = NULL;
@@ -347,7 +324,7 @@ double *getMaxX(int n)
  * 
  *  returns: a pointer pointing to the max value of Y
  */
-double *getMaxY(int n)
+double *getMaxY()
 {
     double max_value = DBL_MIN;
     double *max_value_ptr = NULL;
@@ -375,7 +352,7 @@ double *getMaxY(int n)
  * 
  *  returns: a pointer pointing to the max value of Z
  */
-double *getMaxZ(int n)
+double *getMaxZ()
 {
     double max_value = DBL_MIN;
     double *max_value_ptr = NULL;
@@ -403,7 +380,7 @@ double *getMaxZ(int n)
  * 
  *  returns: the average value of the points
  */
-double getAvgX(int n)
+double getAvgX()
 {
     double *cur = points.x; /* Double pointer to search the x points */
     double sum = 0;
@@ -426,7 +403,7 @@ double getAvgX(int n)
  * 
  *  returns: the average value of the points
  */
-double getAvgY(int n)
+double getAvgY()
 {
     double *cur = points.y; /* Double pointer to search the y points */
     double sum = 0;
@@ -449,7 +426,7 @@ double getAvgY(int n)
  * 
  *  returns: the average value of the points
  */
-double getAvgZ(int n)
+double getAvgZ()
 {
     double *cur = points.z; /* Double pointer to search the z points */
     double sum = 0;
@@ -474,7 +451,7 @@ double getAvgZ(int n)
  * 
  *  returns: returns the standart deviation of the points 
  */
-double getDevX(double avg, int n)
+double getDevX(double avg)
 {
     double *cur = points.x; /* Double pointer to search the x points */
     double sum = 0;
@@ -501,7 +478,7 @@ double getDevX(double avg, int n)
  * 
  *  returns: returns the standart deviation of the points 
  */
-double getDevY(double avg, int n)
+double getDevY(double avg)
 {
     double *cur = points.y; /* Double pointer to search the y points */
     double sum = 0;
@@ -528,7 +505,7 @@ double getDevY(double avg, int n)
  * 
  *  returns: returns the standart deviation of the points 
  */
-double getDevZ(double avg, int n)
+double getDevZ(double avg)
 {
     double *cur = points.z; /* Double pointer to search the z points */
     double sum = 0;
@@ -570,11 +547,35 @@ void task1(int n)
 
     /* Loads the data structs with the file content */
     if (n == 0)
-        loadFile(file_name1, 0);
+        loadFile(file_name1);
     if (n == 1)
-        loadFile(file_name2, 1);
+        loadFile(file_name2);
     if (n == 2)
-        loadFile(file_name3, 2);
+        loadFile(file_name3);
+
+    double *min = getMinX();
+    double *max = getMaxX();
+    double avg = getAvgX();
+    double std = getDevX(avg);
+
+    printf("X values for file: %d\n",n+1);
+    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n",*min,*max,avg,std);
+
+    min = getMinY();
+    max = getMaxY();
+    avg = getAvgY();
+    std = getDevY(avg);
+
+    printf("Y values for file: %d\n",n+1);
+    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n",*min,*max,avg,std);
+
+    min = getMinZ();
+    max = getMaxZ();
+    avg = getAvgZ();
+    std = getDevZ(avg);
+
+    printf("Z values for file: %d\n",n+1);
+    printf("Min: %lf\t Max: %lf\t Avg: %lf\tStd: %lf\n",*min,*max,avg,std);
 
     /* UNLOCK */
     pthread_mutex_unlock(&lock);
@@ -861,7 +862,7 @@ void task3(int n)
 void *performWork(void *input)
 {
     struct threadInput *in = (struct threadInput *)input;
-    struct timespec start, finish, next;
+    struct timespec start, next;
     next = in->start;
     if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL) != 0)
     {
