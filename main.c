@@ -26,6 +26,11 @@ enum { NS_PER_SECOND = 1000000000 };
 struct t_point_cloud points; /* 3 arrays com os as structs das coordenadas */
 pthread_mutex_t lock;        /* Semaphore to lock global point cloud */
 int myIdx = 0;               /* Variable that stores the idx of the file read */
+int c = 0;
+int t1s = 0;
+long int t1ns = 0;
+int t2s = 0;
+long int t2ns = 0;
 
 
 int getNPoints(char *filename);
@@ -76,7 +81,7 @@ int main(int argc, char const *argv[])
         input[i].start = start;
     }
 
-    struct timespec start_time;
+    struct timespec start_time, act1, act2, delta1;
 
     if (pthread_mutex_init(&lock, NULL) != 0)
     {
@@ -98,6 +103,19 @@ int main(int argc, char const *argv[])
             {
                 perror("pthread_create");
             }
+                     
+            if (i==0 && j==0)
+            {
+                clock_gettime(CLOCK_REALTIME, &act1);
+            }
+
+            if (i==0 && j==1)
+            {
+                clock_gettime(CLOCK_REALTIME, &act2);
+                sub_timespec(act1, act2, &delta1);
+                printf("Time Activation1: %d.%.9ld\n", (int)delta1.tv_sec, delta1.tv_nsec);
+            }
+            
             if (pthread_join(thread[i], NULL) != 0)
             {
                 perror("thread join");
@@ -647,11 +665,11 @@ void *performWork(void *input)
     struct timespec start, finish, next, delta;
 
     next = in->start;
-    if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL) != 0)
+    /*if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL) != 0)
     {
         perror("nanosleep");
         pthread_exit(NULL);
-    }
+    }*/
     if (in->task == 0)
     {
         clock_gettime(CLOCK_REALTIME, &start);
@@ -659,6 +677,7 @@ void *performWork(void *input)
         clock_gettime(CLOCK_REALTIME, &finish);
         sub_timespec(start, finish, &delta);
         printf("Time task1: %d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+        
     
     }
     if (in->task == 1)
