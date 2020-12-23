@@ -1,6 +1,7 @@
 /* 
- *To run the code use: gcc * main.c -g -Wall -lm
+ *To run the code use: gcc grid.c main.c -g -Wall -lm -lpthread
  */
+
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -8,7 +9,6 @@
 #include <sched.h>
 #include <pthread.h>
 #include <sys/mman.h>
-#include "timespec.h"
 #include "grid.h"
 #include <time.h>
 #include <unistd.h>
@@ -18,8 +18,6 @@ struct threadInput
 {
     int idx;
     int task;
-    struct timespec period;
-    struct timespec start;
 };
 enum
 {
@@ -64,26 +62,14 @@ pthread_t thread[3];
 
 int main(int argc, char const *argv[])
 {
-    struct timespec start;
+    struct timespec act1, act2, delta1;
     struct threadInput input[3];
-    int periodos = 1000000;
-
-    /* Setting the start time and finish time */
-    if (clock_gettime(CLOCK_MONOTONIC, &start) == -1) //Gets the universal start time
-    {
-        perror("clock_gettime(start)");
-    }
-
-    start = timeSum(start, timespecFormat((int)2, 0)); //Adds 3 seconds to the start time to make sure that all the thread are created
 
     for (int i = 0; i < 3; i++)
     {
         input[i].task = i;
-        input[i].period = timespecFormat(0, periodos);
-        input[i].start = start;
     }
 
-    struct timespec start_time, act1, act2, delta1;
 
     if (pthread_mutex_init(&lock, NULL) != 0)
     {
@@ -91,13 +77,8 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if (clock_gettime(CLOCK_MONOTONIC, &start_time) == -1) //Gets the universal start time
-    {
-        perror("clock_gettime(start)");
-    }
-
-    for (int j = 0; j < 3; j++)
-    //while (1)
+    //for (int j = 0; j < 3; j++)
+    while (1)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -106,32 +87,26 @@ int main(int argc, char const *argv[])
                 perror("pthread_create");
             }
 
-            if (i == 0 && j == 0)
+            if (i == 0 && myIdx == 0)
             {
                 clock_gettime(CLOCK_REALTIME, &act1);
             }
 
-            if (i == 0 && j == 1)
+            if (i == 0 && myIdx == 1)
             {
                 clock_gettime(CLOCK_REALTIME, &act2);
                 sub_timespec(act1, act2, &delta1);
                 printf("Time Activation1: %d.%.9ld\n", (int)delta1.tv_sec, delta1.tv_nsec);
             }
-
-            if (pthread_join(thread[i], NULL) != 0)
-            {
-                perror("thread join");
-            }
         }
 
-        /*for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             if (pthread_join(thread[i], NULL) != 0)
             {
                 perror("thread join");
             }
         }
-        */
 
         resetPointCloud();
         myIdx++;
@@ -664,14 +639,9 @@ void task3(int n)
 void *performWork(void *input)
 {
     struct threadInput *in = (struct threadInput *)input;
-    struct timespec start, finish, next, delta;
+    struct timespec start, finish,  delta;
 
-    next = in->start;
-    /*if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL) != 0)
-    {
-        perror("nanosleep");
-        pthread_exit(NULL);
-    }*/
+
     if (in->task == 0)
     {
         clock_gettime(CLOCK_REALTIME, &start);
